@@ -90,6 +90,8 @@ async function run() {
             res.send({ result, token });
         })
 
+      
+
         // service for id
         app.get('/service/:id', async (req, res) => {
             const id = req.params.id;
@@ -118,6 +120,17 @@ async function run() {
 
 
         })
+
+        //for payment booking 
+        app.get('/booking/:id', async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectID(id)};
+            const booking = await bookingCollection.findOne(query);
+            res.send(booking);
+        })
+
+       
+       
 
 
         //for booking service 
