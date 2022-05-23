@@ -5,6 +5,9 @@ const jwt = require('jsonwebtoken');
 const { ObjectID } = require('bson');
 const res = require('express/lib/response');
 require('dotenv').config();
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+
 const app = express()
 const port = process.env.PORT || 8000
 
@@ -38,6 +41,27 @@ async function run() {
         const serviceCollection = client.db('motor_parts').collection('services');
         const bookingCollection = client.db('motor_parts').collection('bookings');
         const userCollection = client.db('motor_parts').collection('users');
+        const paymentCollection = client.db('motor_parts').collection('payments');
+        const reviewCollection = client.db('motor_parts').collection('review');
+
+       //for payament method master card 
+       app.post('/create-payment-intent', async(req, res)=>{
+           const service = req.body;
+           const price = service.price;
+           const amount = price*100;
+           const paymentIntent = await stripe.paymentIntents.create({
+               amount: amount,
+               currency: 'usd',
+               payment_method_types:['card']
+           });
+           res.send({clientSecret: paymentIntent.client_secret})
+       });
+
+
+      
+
+
+
 
         //for all service
         app.get('/service', async (req, res) => {
@@ -90,6 +114,7 @@ async function run() {
             res.send({ result, token });
         })
 
+
       
 
         // service for id
@@ -119,7 +144,39 @@ async function run() {
             }
 
 
+        });
+
+
+        // app.post('/review', async(req, res)=>{
+        //     const review = req.body;
+        //     const result = await reviewCollection.insertOne(review);
+        //     res.send(result);
+        // })
+
+        app.get('/review',async(req, res)=>{
+            const query = {};
+            const cursor = reviewCollection.find(query);
+            const review = await cursor.toArray();
+            res.send(review);
         })
+
+
+
+        app.post('/review', async(req, res)=>{
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.send(result);
+        });
+
+
+
+
+
+
+
+
+
+
 
         //for payment booking 
         app.get('/booking/:id', async(req, res)=>{
@@ -129,8 +186,45 @@ async function run() {
             res.send(booking);
         })
 
+        
+        //for Add service
+      app.post('/service', async(req, res)=>{
+          const newService =req.body;
+          const result = await serviceCollection.insertOne(newService)
+          res.send
+      })
+
+
+
+
        
        
+         //for trangation ID
+
+       app.patch('/booking/:id', async(req, res)=>{
+        const id =req.params.id;
+        const payment = req.body;
+        const filter ={_id: ObjectID(id) };
+        const updatedDoc={
+           $set:{
+               paid: true,
+               transactionId: payment.transactionId,
+           }
+        }
+        const result = await paymentCollection.insertOne(payment);
+        const updatedBooking = await bookingCollection.updateOne(filter, updatedDoc);
+        res.send(updatedDoc);
+    })
+
+
+
+
+
+
+
+
+
+
 
 
         //for booking service 
