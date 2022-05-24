@@ -43,6 +43,7 @@ async function run() {
         const userCollection = client.db('motor_parts').collection('users');
         const paymentCollection = client.db('motor_parts').collection('payments');
         const reviewCollection = client.db('motor_parts').collection('review');
+        const profileCollection = client.db('motor_parts').collection('profile');
 
        //for payament method master card 
        app.post('/create-payment-intent', async(req, res)=>{
@@ -170,6 +171,53 @@ async function run() {
 
 
 
+        //for profile 
+
+
+        app.get('/profile/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectID(id) };
+            const profile = await profileCollection.findOne(query);
+            res.send(profile);
+        })
+
+
+
+
+        app.get('/profile',async(req, res)=>{
+            const query = {};
+            const cursor = profileCollection.find(query);
+            const profile = await cursor.toArray();
+            res.send(profile);
+        })
+
+
+        app.post('/profile', async(req, res)=>{
+            const profile = req.body;
+            const result = await profileCollection.insertOne(profile);
+            res.send(result);
+        });
+
+
+       //for profile end 
+
+
+
+       
+    //    app.put('/profile/:id', async(req, res)=>{
+    //        const id = req.params.id;
+    //        const updateprofile= req.body;
+    //        const filter = {_id: ObjectID(id)};
+    //        const options = {upsert: true};
+    //        const updatedDoc = {
+    //            $set:{
+    //              address: updateprofile.address,
+    //              mobile: updateprofile.mobile
+    //            }
+    //        };
+    //        const result = await profileCollection.updateOne(filter, updatedDoc, options);
+    //        res.send(result);
+    //    })
 
 
 
