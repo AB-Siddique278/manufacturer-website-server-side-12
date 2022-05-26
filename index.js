@@ -307,7 +307,7 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('Hello World!')
+    res.send('Hello wellcome to motor parts server!')
 })
 
 app.listen(port, () => {
